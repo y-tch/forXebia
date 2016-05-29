@@ -53,15 +53,15 @@ public class Tondeuse {
 	public void toLeft() {
 		switch (orientation) {
 			case N:
-				orientation = Orientation.E;
-				break;
-			case E:
-				orientation = Orientation.S;
-				break;
-			case S:
 				orientation = Orientation.W;
 				break;
 			case W:
+				orientation = Orientation.S;
+				break;
+			case S:
+				orientation = Orientation.E;
+				break;
+			case E:
 				orientation = Orientation.N;
 				break;
 		}
@@ -73,15 +73,15 @@ public class Tondeuse {
 	public void toRight() {
 		switch (orientation) {
 			case N:
-				orientation = Orientation.W;
-				break;
-			case W:
-				orientation = Orientation.S;
-				break;
-			case S:
 				orientation = Orientation.E;
 				break;
 			case E:
+				orientation = Orientation.S;
+				break;
+			case S:
+				orientation = Orientation.W;
+				break;
+			case W:
 				orientation = Orientation.N;
 				break;
 		}
@@ -92,7 +92,7 @@ public class Tondeuse {
 	 * @return
 	 */
 	public String getCurrentPosition() {
-		return position.toString()+" "+orientation.toString();
+		return position.x+" "+position.y+" "+orientation.toString();
 	}
 	
 	

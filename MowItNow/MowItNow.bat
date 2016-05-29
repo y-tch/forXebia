@@ -1,0 +1,1 @@
+java -jar MowItNow.jar %1=%2

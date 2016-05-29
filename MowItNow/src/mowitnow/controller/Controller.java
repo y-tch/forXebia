@@ -5,6 +5,7 @@ package mowitnow.controller;
 
 import java.awt.Point;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
@@ -21,14 +22,14 @@ import mowitnow.factory.Factory;
 /**
  * @author Y.Tchirikov
  *
- * Gérer le tondage de la {@link Pelouse} par N {@link Tondeuse}.
+ * Gérer le tondage de la {@link Pelouse} par N {@link Tondeuse}s.
  */
 public class Controller {
 	private Pelouse pelouse;
 	private ArrayList<Task> tasks;
 	
 	/**
-	 * Effectuer le tondage de la pelouse selon le fichier d'entrée.
+	 * Effectuer le tondage de la pelouse selon le texte d'entrée.
 	 * Imprimer dans la sortie par défaut 
 	 * @param text	Texte des instructions
 	 * @throws Exception	Si problème de lecture
@@ -41,7 +42,7 @@ public class Controller {
 	}
 	
 	/**
-	 * Effectuer le tondage de la pelouse selon le fichier d'entrée.
+	 * Effectuer le tondage de la pelouse selon le texte d'entrée.
 	 * Imprimer dans la sortie définie.
 	 * @param text	Texte des instructions
 	 * @param stream	Sortie d'impression. Si <code>null</code> alors la sortie par défaut 
@@ -92,10 +93,15 @@ public class Controller {
 	public void execute(File file, PrintStream stream)
 		throws IOException, Exception
 	{
+		if(file == null)
+			throw new IllegalArgumentException("le fichier est vide");
+		if( !file.exists() )
+			throw new IOException("le fichier est introuvable");
+		
 		// lire le fichier des params
 		Reader reader = null;
 		try {
-			reader = Factory.getFileReader(file);
+			reader = new FileReader(file);
 		
 			execute(reader, stream);
 		}
@@ -117,7 +123,7 @@ public class Controller {
 	 * @param stream	Sortie d'impression. Si <code>null</code> alors la sortie par défaut 
 	 * @throws Exception Si le contenu est incorrect
 	 */
-	public void execute(Reader reader, PrintStream stream)
+	private void execute(Reader reader, PrintStream stream)
 		throws IOException, Exception
 	{
 		// lire le flux des params
@@ -139,6 +145,7 @@ public class Controller {
 				stream.println("tondeuse #"+i+". le lancement : "+task.getTondeuse().getCurrentPosition());
 				// bouger la tondeuse selon les commandes
 				for(Commande c : task.getCommandes()) {
+					stream.print("tondeuse #"+i+". "+c+" => ");
 					if( Commande.A.equals(c) ) { // avancer dans la direction actuelle
 						int x = task.getTondeuse().getPosition().x;
 						int y = task.getTondeuse().getPosition().y;
@@ -161,7 +168,7 @@ public class Controller {
 						
 						if( !pelouse.contains(x, y) ) { 
 							// la tondeuse est en dehors. on l'arrete et passe à la suivante 
-							stream.println("tondeuse #"+i+" : en dehors da la pelouse. l'arret (selon la spécification)");
+							stream.println(" !!! en dehors da la pelouse. l'arret (selon la spécification)");
 							break;
 						}
 					}
@@ -172,11 +179,13 @@ public class Controller {
 							task.getTondeuse().toLeft();
 					}
 					// la position finale de la tondeuse
-					stream.println("tondeuse #"+i+" : "+task.getTondeuse().getCurrentPosition());
+					stream.println(task.getTondeuse().getCurrentPosition());
 				}	
 				// la position finale de la tondeuse
-				stream.println("tondeuse #"+i+". l'arret : "+task.getTondeuse().getCurrentPosition());
+				stream.println("tondeuse #"+i+". l'arret "+task.getTondeuse().getCurrentPosition());
 			}
+			
+			stream.println("fin "+pelouse.toString());
 		}
 		finally {
 			if(reader != null) {
@@ -186,6 +195,26 @@ public class Controller {
 		}
 	}
 	
+	/**
+	 * Clean instance avant détruire
+	 */
+	public void clean() {
+		if(tasks != null) {
+			tasks.clear();
+			tasks = null;
+		}
+		pelouse = null;
+	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+		clean();
+		super.finalize();
+	}
+	
+	/**
+	 * Créer un instance par défaut
+	 */
 	public Controller() {
 		
 	}	

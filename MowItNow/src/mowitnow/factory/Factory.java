@@ -5,8 +5,6 @@ package mowitnow.factory;
 
 import java.awt.Point;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.AbstractMap;
@@ -25,27 +23,11 @@ import mowitnow.core.Tondeuse;
  * IO bibliotheque
  */
 public class Factory {
-	/**
-	 * Lire le fichier & init la pelouse avec les intructions
-	 * @param file	Fichier des instructions
-	 * @return	{@link Pelouse} & des {@link Task}
-	 * @throws IOException
-	 */
-	public static FileReader getFileReader(File file)
-		throws Exception
-	{
-		if(file == null)
-			throw new IllegalArgumentException("le fichier est vide");
-		if( !file.exists() )
-			throw new IOException("le fichier est introuvable");
-		
-		return new FileReader(file);
-	}
 	
 	/**
-	 * Lire le fichier & init la pelouse avec les intructions
-	 * @param file	Fichier des instructions
-	 * @return	{@link Pelouse} & des {@link Task}
+	 * Lire le flux & init la pelouse avec les intructions
+	 * @param reader	Flux des instructions
+	 * @return	{@link Pelouse} & des {@link Task}s
 	 * @throws IOException
 	 */
 	public static Map.Entry<Pelouse, ArrayList<Task>> readStream(Reader reader)
