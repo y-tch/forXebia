@@ -3,6 +3,8 @@
  */
 package mowitnow.core;
 
+import java.awt.Point;
+
 /**
  * @author Y.Tchirikov
  * 
@@ -26,6 +28,17 @@ public class Pelouse {
 	 */
 	public int getWidth() {
 		return width;
+	}
+	
+	/**
+	 * Vérifier si la position est dans le perimetre de la pelouse
+	 * @param point La position
+	 * @return <code>true</code> si la position est correct. <code>false</code> si la position
+	 * est en dehors de la pelouse
+	 * @see #contains(int, int)
+	 */
+	public boolean contains(Point point) {
+		return contains(point.x, point.y);
 	}
 	
 	/**

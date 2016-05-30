@@ -12,7 +12,6 @@ import java.io.PrintStream;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -31,117 +30,168 @@ public class Frame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	
+	private JPanel panelTop;
+	private JPanel panelBottom;
 	private JTextField textField;
+	private JButton btnOuvrir;
+	private JSplitPane splitPane;
 	private JTextArea txtOutput;
+	private JPanel panelCenterBtn;
+	private JButton btnLancer;
+	private JPanel panelCenterTxt;
 	private JTextArea txtInput;
 	private JFileChooser fc;
 	
 	private Controller controller;
 	
-	public Frame() {
-		setMinimumSize(new Dimension(440, 400));
-		setPreferredSize(new Dimension(300, 300));
-		
-		JPanel panelTop = new JPanel();
-		panelTop.setBorder(new MatteBorder(0, 0, 1, 0, (Color) new Color(0, 0, 0)));
-		panelTop.setMaximumSize(new Dimension(32767, 55));
-		panelTop.setPreferredSize(new Dimension(10, 55));
-		panelTop.setMinimumSize(new Dimension(10, 55));
-		getContentPane().add(panelTop, BorderLayout.NORTH);
-		panelTop.setLayout(null);
-		
-		textField = new JTextField();
-		textField.setMinimumSize(new Dimension(200, 20));
-		textField.setPreferredSize(new Dimension(200, 20));
-		textField.setBounds(10, 25, 300, 20);
-		panelTop.add(textField);
-		textField.setColumns(10);
-		
-		JLabel lblLancerParFichier = new JLabel("Ouvrir le fichier");
-		lblLancerParFichier.setBounds(10, 5, 100, 14);
-		panelTop.add(lblLancerParFichier);
-		
-		JButton btnOuvrir = new JButton("Ouvrir");
-		btnOuvrir.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				int returnVal = getFileChooser().showDialog(Frame.this, "Ouvrir");
-				if(returnVal == JFileChooser.APPROVE_OPTION)
-				{
-					textField.setText(getFileChooser().getSelectedFile().getAbsolutePath());
-					
-					ByteArrayOutputStream stream = new ByteArrayOutputStream();
-					PrintStream writer = null;
-					try {
-						writer = new PrintStream(stream);
-						getController().execute(fc.getSelectedFile(), writer);
-					}
-					catch(Exception e){
-						writer.print(e);
-					}
-					finally {
-						writer.close();
-					}
-					getTxtOutput().append( stream.toString() );
-					getTxtOutput().append("\n");
-				}
+	/**
+	 * Ouvrir & lancer le fichier des commandes
+	 */
+	private void runFile() {
+		int returnVal = getFileChooser().showDialog(Frame.this, "Ouvrir");
+		if(returnVal == JFileChooser.APPROVE_OPTION)
+		{
+			getTextField().setText(getFileChooser().getSelectedFile().getAbsolutePath());
+			
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			PrintStream writer = null;
+			try {
+				writer = new PrintStream(stream);
+				if(getTxtOutput().getText().length() > 1000)
+					getTxtOutput().setText("");
+				getController().execute(fc.getSelectedFile(), writer);
 			}
-		});
-		btnOuvrir.setBounds(320, 23, 89, 23);
-		panelTop.add(btnOuvrir);
-		
-		JPanel panel = new JPanel();
-		panel.setPreferredSize(new Dimension(100, 100));
-		panel.setMinimumSize(new Dimension(100, 100));
-		panel.setLayout(new BorderLayout(0, 0));		
-		
-		JScrollPane scrollPane = new JScrollPane( getTxtOutput() );
-		panel.add(scrollPane, BorderLayout.CENTER);
-		
-		JPanel panel_1 = new JPanel();
-		panel_1.setBorder(new MatteBorder(0, 0, 1, 0, (Color) new Color(0, 0, 0)));
-		panel_1.setLayout(new BorderLayout(0, 0));
-		
-		JScrollPane scrollPane_1 = new JScrollPane( getTxtInput() );
-		panel_1.add(scrollPane_1, BorderLayout.CENTER);
-		
-		JPanel panel_2 = new JPanel();
-		panel_2.setMaximumSize(new Dimension(32767, 40));
-		panel_2.setMinimumSize(new Dimension(10, 40));
-		panel_2.setPreferredSize(new Dimension(90, 40));
-		panel_1.add(panel_2, BorderLayout.NORTH);
-		panel_2.setLayout(null);
-		
-		JButton btnLancer = new JButton("Lancer le texte");
-		btnLancer.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if( !getTxtInput().getText().isEmpty() ) {
-					ByteArrayOutputStream stream = new ByteArrayOutputStream();
-					PrintStream writer = null;
-					try {
-						writer = new PrintStream(stream);
-						getController().execute(getTxtInput().getText(), writer);
-					}
-					catch(Exception e){
-						writer.print(e);
-					}
-					finally {
-						writer.close();
-					}
-					getTxtOutput().append( stream.toString() );
-					getTxtOutput().append("\n");
+			catch(Exception e){
+				writer.print(e);
+			}
+			finally {
+				writer.close();
+			}
+			getTxtOutput().append( stream.toString() );
+			getTxtOutput().append("\n");
+		}
+	}
+	
+	/**
+	 * Lancer le text des commandes
+	 */
+	private void runText() {
+		if( !getTxtInput().getText().isEmpty() ) {
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			PrintStream writer = null;
+			try {
+				writer = new PrintStream(stream);
+				
+				if(getTxtOutput().getText().length() > 1000)
+					getTxtOutput().setText("");
+				getController().execute(getTxtInput().getText(), writer);
+			}
+			catch(Exception e){
+				writer.print(e);
+			}
+			finally {
+				writer.close();
+			}
+			getTxtOutput().append( stream.toString() );
+			getTxtOutput().append("\n");
 
+		}
+	}
+	
+	private void initialize() {
+		setMinimumSize(new Dimension(440, 400));
+		setPreferredSize(new Dimension(440, 440));
+		getContentPane().add(getPanelTop(), BorderLayout.NORTH);
+		getContentPane().add(getSplitPane(), BorderLayout.CENTER);
+	}
+	
+	private JPanel getPanelTop() {
+		if(panelTop == null) {
+			
+			panelTop = new JPanel();
+			panelTop.setBorder(new MatteBorder(0, 0, 1, 0, (Color) new Color(0, 0, 0)));
+			panelTop.setMaximumSize(new Dimension(32767, 65));
+			panelTop.setPreferredSize(new Dimension(10, 65));
+			panelTop.setMinimumSize(new Dimension(10, 65));
+			panelTop.setLayout(null);
+			panelTop.add( getTextField() );
+			panelTop.add(getBtnOuvrir());
+		}
+		return panelTop;
+	}
+	
+	private JTextField getTextField() {
+		if(textField == null) {
+			textField = new JTextField();
+			textField.setMinimumSize(new Dimension(200, 20));
+			textField.setPreferredSize(new Dimension(200, 20));
+			textField.setBounds(10, 35, 400, 20);
+			textField.setEditable(false);
+		}			
+		return textField;
+	}
+	
+	private JButton getBtnOuvrir() {
+		if(btnOuvrir == null) {
+			btnOuvrir = new JButton("Lancer le fichier");
+			btnOuvrir.setBounds(10, 10, 130, 23);
+			btnOuvrir.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					runFile();
 				}
-			}
-		});
-		btnLancer.setBounds(10, 11, 130, 23);
-		panel_2.add(btnLancer);
-		
-		JSplitPane splitPane = new JSplitPane();
-		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		getContentPane().add(splitPane, BorderLayout.CENTER);
-		splitPane.setTopComponent(panel_1);
-		splitPane.setBottomComponent(panel);
-		splitPane.setDividerLocation(150);
+			});
+			
+		}
+		return btnOuvrir;
+	}
+	
+	private JSplitPane getSplitPane() {
+		if(splitPane == null) {
+			splitPane = new JSplitPane();
+			splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+			splitPane.setTopComponent( getPanelCenterTxt() );
+			splitPane.setBottomComponent( getPanelBottom() );
+			splitPane.setDividerLocation(150);
+		}
+		return splitPane;
+	}
+	
+	public JPanel getPanelCenterBtn() {
+		if(panelCenterBtn == null) {
+			panelCenterBtn = new JPanel();
+			panelCenterBtn.setMaximumSize(new Dimension(32767, 40));
+			panelCenterBtn.setMinimumSize(new Dimension(10, 40));
+			panelCenterBtn.setPreferredSize(new Dimension(90, 40));
+			panelCenterBtn.setLayout(null);
+			panelCenterBtn.add(getBtnLancer());
+		}
+		return panelCenterBtn;
+	}
+	
+	private JButton getBtnLancer() {
+		if(btnLancer == null) {
+			btnLancer = new JButton("Lancer le texte");
+			btnLancer.setBounds(10, 10, 130, 23);
+			btnLancer.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					runText();
+				}
+			});
+		}
+		return btnLancer;
+	}
+	
+	private JPanel getPanelBottom() {
+		if(panelBottom == null) {
+			JScrollPane scrollPane = new JScrollPane( getTxtOutput() );
+			
+			panelBottom = new JPanel();
+			panelBottom.setPreferredSize(new Dimension(100, 100));
+			panelBottom.setMinimumSize(new Dimension(100, 100));
+			panelBottom.setLayout(new BorderLayout(0, 0));	
+			panelBottom.add(scrollPane, BorderLayout.CENTER);
+		}
+		return panelBottom;
 	}
 	
 	private JTextArea getTxtOutput() {
@@ -151,6 +201,19 @@ public class Frame extends JFrame {
 			txtOutput.setEditable(false);
 		}
 		return txtOutput;
+	}
+	
+	private JPanel getPanelCenterTxt() {
+		if(panelCenterTxt == null) {
+			JScrollPane scrollPane = new JScrollPane( getTxtInput() );
+			
+			panelCenterTxt = new JPanel();
+			panelCenterTxt.setBorder(new MatteBorder(0, 0, 1, 0, (Color) new Color(0, 0, 0)));
+			panelCenterTxt.setLayout(new BorderLayout(0, 0));
+			panelCenterTxt.add(getPanelCenterBtn(), BorderLayout.NORTH);
+			panelCenterTxt.add(scrollPane, BorderLayout.CENTER);
+		}
+		return panelCenterTxt;
 	}
 	
 	private JTextArea getTxtInput() {
@@ -173,5 +236,13 @@ public class Frame extends JFrame {
 		if(controller == null)
 			controller = new Controller();
 		return controller;
+	}
+	
+	/**
+	 * Créer simple MowItNow interface
+	 */
+	public Frame() {
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		initialize();
 	}
 } 

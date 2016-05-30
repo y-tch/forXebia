@@ -13,6 +13,7 @@ public class MowItNowUI {
 		Frame frame = new Frame();
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
+		frame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
 		frame.toFront();
 	}
 

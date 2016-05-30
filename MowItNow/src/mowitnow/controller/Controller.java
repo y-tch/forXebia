@@ -11,6 +11,7 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 
 import mowitnow.core.Commande;
@@ -134,6 +135,8 @@ public class Controller {
 			pelouse = job.getKey();
 			tasks = job.getValue();
 			
+			stream.println("---");
+			stream.println(new Date().toString());
 			stream.println("init "+pelouse.toString());
 			stream.println("Nb. des tondeuses à executer "+tasks.size());
 			// lancer des tondeuses une après autre
@@ -143,44 +146,51 @@ public class Controller {
 				stream.println();
 				// le numero et la position initiale
 				stream.println("tondeuse #"+i+". le lancement : "+task.getTondeuse().getCurrentPosition());
-				// bouger la tondeuse selon les commandes
-				for(Commande c : task.getCommandes()) {
-					stream.print("tondeuse #"+i+". "+c+" => ");
-					if( Commande.A.equals(c) ) { // avancer dans la direction actuelle
-						int x = task.getTondeuse().getPosition().x;
-						int y = task.getTondeuse().getPosition().y;
-						switch( task.getTondeuse().getOrientation() ) {
-							case N :
-								y++;
+				// check la position
+				if( pelouse.contains( task.getTondeuse().getPosition() ) ) {
+					// bouger la tondeuse selon les commandes
+					for(Commande c : task.getCommandes()) {
+						stream.print("tondeuse #"+i+". "+c+" => ");
+						if( Commande.A.equals(c) ) { // avancer dans la direction actuelle
+							int x = task.getTondeuse().getPosition().x;
+							int y = task.getTondeuse().getPosition().y;
+							switch( task.getTondeuse().getOrientation() ) {
+								case N :
+									y++;
+									break;
+								case E :
+									x++;
+									break;
+								case S :
+									y--;
+									break;
+								case W :
+									x--;
+									break;
+							}
+							// mettre la nouvelle position
+							task.getTondeuse().setPosition( new Point(x, y) );
+							
+							if( !pelouse.contains(x, y) ) { 
+								// la tondeuse est en dehors. on l'arrete et passe à la suivante 
+								stream.println(" !!! en dehors da la pelouse. l'arret (selon la spécification)");
 								break;
-							case E :
-								x++;
-								break;
-							case S :
-								y--;
-								break;
-							case W :
-								x--;
-								break;
+							}
 						}
-						// mettre la nouvelle position
-						task.getTondeuse().setPosition( new Point(x, y) );
-						
-						if( !pelouse.contains(x, y) ) { 
-							// la tondeuse est en dehors. on l'arrete et passe à la suivante 
-							stream.println(" !!! en dehors da la pelouse. l'arret (selon la spécification)");
-							break;
+						else { // pivoter la tondeuse
+							if( Commande.D.equals(c) )
+								task.getTondeuse().toRight();
+							else
+								task.getTondeuse().toLeft();
 						}
-					}
-					else { // pivoter la tondeuse
-						if( Commande.D.equals(c) )
-							task.getTondeuse().toRight();
-						else
-							task.getTondeuse().toLeft();
-					}
-					// la position finale de la tondeuse
-					stream.println(task.getTondeuse().getCurrentPosition());
-				}	
+						// la position finale de la tondeuse
+						stream.println(task.getTondeuse().getCurrentPosition());
+					}	
+				} else { 
+					// la tondeuse est en dehors. on l'arrete et passe à la suivante 
+					stream.println(" !!! en dehors da la pelouse. l'arret (selon la spécification)");
+					continue;
+				}
 				// la position finale de la tondeuse
 				stream.println("tondeuse #"+i+". l'arret "+task.getTondeuse().getCurrentPosition());
 			}
